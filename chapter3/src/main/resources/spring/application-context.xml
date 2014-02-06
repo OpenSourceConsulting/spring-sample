@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:mybatis/db.properties</value>
+			</list>
+		</property>
+	</bean>
+  	
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+    
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
+		<property name="mapperLocations">
+			<list>
+				<value>com/osc/edu/**/*Mapper.xsql</value>
+				<!-- jar 파일 내의 resource는 **/* 로 탐색되지 않음. -->
+				<value>classpath:com/osc/edu/commons/customers/sql/CustomersMapper.xsql</value>
+				<value>classpath:com/osc/edu/commons/employees/sql/EmployeesMapper.xsql</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- Mapper Scaning 시 Mapper interface와 Dao interface 간의 충돌이 발생 -->
+		<!-- annotationClass을 지정하거나 basePackage를 세분화 -->
+		<!-- property name="basePackage" value="com.osc.edu.commons.customers.mapper,com.osc.edu.commons.employees.mapper" /-->
+		<property name="basePackage" value="com.osc.edu" />
+		<property name="annotationClass" value="com.osc.edu.commons.annotation.SqlMapper" />
+	</bean>
+
+	<bean class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	
+	<bean id="customersDao" class="com.osc.edu.commons.customers.dao.impl.CustomersDaoImpl" />
+	<bean id="employeesDao" class="com.osc.edu.commons.employees.dao.impl.EmployeesDaoImpl" />
+	<bean id="customersService" class="com.osc.edu.commons.customers.service.impl.CustomersServiceImpl" />
+	<bean id="employeesService" class="com.osc.edu.commons.employees.service.impl.EmployeesServiceImpl" />
+	
+</beans>
